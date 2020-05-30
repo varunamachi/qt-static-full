@@ -1,0 +1,68 @@
+language: cpp
+env:
+  global:
+    - QT5_VERSION="v5.15.0"
+      QT5_INSTALL_PREFIX="/usr/local/qt5-static"
+matrix:
+  include:
+    # linux release build: gcc 9.1.0 on ubuntu 18.04
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      # Install xcb and libmesadev
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+            - libxkbcommon-dev
+            - libgl1-mesa-dev
+      before_install:
+        # force qt to use desired compiler version
+        - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+        - gcc --version
+        - g++ --version
+      # env: QT5_XCB_FLAG="qt-xcb"
+    # osx release build: xcode 9.4.1 [9F2000], macOS 10.13
+    - os: osx
+      osx_image: xcode9.4
+      compiler: clang
+      # explicitly disable xcb on osx build
+      # env: QT5_XCB_FLAG="no-xcb"
+before_script:
+  # download Qt5 sources
+  - git clone https://code.qt.io/qt/qt5.git
+  - cd qt5
+  # checkout desired version
+  - git checkout $QT5_VERSION
+  # only need qtbase submodule
+  - git submodule update --init qtbase
+  - cd ../
+script:
+  - mkdir build
+  - cd build
+  - ../qt5/qtbase/configure -opensource -confirm-license -prefix $QT5_INSTALL_PREFIX -static -release -ltcg -optimize-size -no-pch -sql-sqlite -qt-zlib -qt-libjpeg -qt-libpng -qt-pcre -qt-harfbuzz -skip webengine -nomake tools -nomake tests -nomake examples
+  # - ../qt5/qtbase/configure -opensource -confirm-license -prefix $QT5_INSTALL_PREFIX -release -static -silent -sql-sqlite -qt-zlib -qt-libjpeg -qt-libpng -qt-pcre -qt-harfbuzz -no-compile-examples -nomake tests -nomake examples -no-opengl -no-openssl -no-sql-odbc -no-icu -no-feature-concurrent -no-feature-xml -feature-testlib
+  - make -j2
+  - sudo make install
+  # confirm qmake runs and check version number
+  - $QT5_INSTALL_PREFIX/bin/qmake -v
+before_deploy:
+  # make tarball of installation
+  tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $QT5_INSTALL_PREFIX
+deploy:
+  # if commit was tagged, upload resulting tarball to github release
+  provider: releases
+  api_key:
+    secure: ""
+  file:
+    - qt5-static-$TRAVIS_OS_NAME.tgz
+  skip_cleanup: true
+  on:
+    repo: varunamachi/qt-static-full
+    tags: true
+    all_branches: true
+notifications:
+  email: false
