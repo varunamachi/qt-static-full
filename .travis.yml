@@ -77,7 +77,7 @@ before_script:
   - cd ../
 script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then $TRAVIS_BUILD_DIR/build-unix.sh; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then travis_wait 120 $TRAVIS_BUILD_DIR/build-windows.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then $TRAVIS_BUILD_DIR/build-windows.sh; fi
 
 before_deploy:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $LINUX_QT5_INSTALL_PREFIX; fi
