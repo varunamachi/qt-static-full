@@ -41,8 +41,6 @@ before_script:
   - git submodule update --init qtbase
   - cd ../
 script:
-  - mkdir build
-  - cd build
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then $TRAVIS_BUILD_DIR/build-unix.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then $TRAVIS_BUILD_DIR/build-windows.sh; fi
 
