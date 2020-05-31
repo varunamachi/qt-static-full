@@ -10,6 +10,8 @@ cd build || exit 100
 
 # - ..\qt5\qtbase\configure -opensource -confirm-license -platform win32-g++ -prefix %QT5_INSTALL_PREFIX% -release -static -static-runtime -silent -sql-sqlite -qt-zlib -qt-libjpeg -qt-libpng -qt-pcre -qt-harfbuzz
 ../qt5/qtbase/configure \
+  -opensource \
+  -confirm-license \
   -release \
   -static \
   -static-runtime \
