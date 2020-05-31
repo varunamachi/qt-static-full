@@ -2,7 +2,9 @@ language: cpp
 env:
   global:
     - QT5_VERSION="v5.15.0"
-      QT5_INSTALL_PREFIX="/usr/local/qt5-static"
+    - if [ "$TRAVIS_OS_NAME" = "windows" ]; then QT5_INSTALL_PREFIX="C:\\qt5-static"; fi
+    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then QT5_INSTALL_PREFIX="/usr/local/qt5-static"; fi
+
 matrix:
   include:
     # linux release build: gcc 9.1.0 on ubuntu 18.04
@@ -24,13 +26,14 @@ matrix:
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
         - gcc --version
         - g++ --version
+    - os: windows
       # env: QT5_XCB_FLAG="qt-xcb"
     # osx release build: xcode 9.4.1 [9F2000], macOS 10.13
     # - os: osx
     #   osx_image: xcode9.4
     #   compiler: clang
-      # explicitly disable xcb on osx build
-      # env: QT5_XCB_FLAG="no-xcb"
+    # explicitly disable xcb on osx build
+    # env: QT5_XCB_FLAG="no-xcb"
 before_script:
   # download Qt5 sources
   - git clone https://code.qt.io/qt/qt5.git
@@ -43,15 +46,14 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - ../qt5/qtbase/configure -opensource -confirm-license -prefix $QT5_INSTALL_PREFIX -static -release -ltcg -optimize-size -no-pch -sql-sqlite -qt-zlib -qt-libjpeg -qt-libpng -qt-pcre -qt-harfbuzz -skip webengine -nomake tools -nomake tests -nomake examples
-  # - ../qt5/qtbase/configure -opensource -confirm-license -prefix $QT5_INSTALL_PREFIX -release -static -silent -sql-sqlite -qt-zlib -qt-libjpeg -qt-libpng -qt-pcre -qt-harfbuzz -no-compile-examples -nomake tests -nomake examples -no-opengl -no-openssl -no-sql-odbc -no-icu -no-feature-concurrent -no-feature-xml -feature-testlib
-  - make -j2
-  - sudo make install
-  # confirm qmake runs and check version number
-  - $QT5_INSTALL_PREFIX/bin/qmake -v
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then $TRAVIS_BUILD_DIR/build-unix.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then $TRAVIS_BUILD_DIR/build-windows.sh; fi
+
+
 before_deploy:
-  # make tarball of installation
-  tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $QT5_INSTALL_PREFIX
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $QT5_INSTALL_PREFIX; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then 7z a $TRAVIS_BUILD_DIR/qt5-static-windows.zip $QT5_INSTALL_PREFIX; fi
+
 deploy:
   # if commit was tagged, upload resulting tarball to github release
   provider: releases
