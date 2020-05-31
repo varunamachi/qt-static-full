@@ -17,7 +17,6 @@ cd build || exit 100
   -opengl desktop \
   -platform win32-g++ \
   -prefix "$WINDOWS_QT5_INSTALL_PREFIX" \
-  -silent \
   -sql-sqlite \
   -qt-zlib \
   -qt-libjpeg \
@@ -28,7 +27,7 @@ cd build || exit 100
   -nomake tools \
   -nomake tests \
   -nomake examples || exit 101
-  
+
 mingw32-make -j2 || exit 102
 mingw32-make install || exit 103
   
