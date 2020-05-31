@@ -2,8 +2,8 @@ language: cpp
 env:
   global:
     - QT5_VERSION="v5.15.0"
-    - if [ "$TRAVIS_OS_NAME" = "windows" ]; then export QT5_INSTALL_PREFIX="/c/qt5-static"; fi
-    - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export QT5_INSTALL_PREFIX="/usr/local/qt5-static"; fi
+    - WINDOWS_QT5_INSTALL_PREFIX="/c/qt5-static"
+    - LINUX_QT5_INSTALL_PREFIX="/usr/local/qt5-static"
 
 matrix:
   include:
@@ -49,8 +49,8 @@ script:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then $TRAVIS_BUILD_DIR/build-windows.sh; fi
 
 before_deploy:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $QT5_INSTALL_PREFIX; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then 7z a $TRAVIS_BUILD_DIR/qt5-static-windows.zip $QT5_INSTALL_PREFIX; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -zcvf qt5-static-$TRAVIS_OS_NAME.tgz $LINUX_QT5_INSTALL_PREFIX; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then 7z a $TRAVIS_BUILD_DIR/qt5-static-windows.zip $WINDOWS_QT5_INSTALL_PREFIX; fi
   - git config --local user.name "$GIT_USER_NAME"
   - git config --local user.email "$GIT_USER_EMAIL"
   - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
